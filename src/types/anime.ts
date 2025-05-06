@@ -6,4 +6,8 @@ export interface Anime {
       image_url: string;
     };
   };
+  synopsis: string;
+  rank: number;
+  popularity: number;
+  members: number;
 } 

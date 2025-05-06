@@ -4,7 +4,7 @@ import useDebounce from '../hooks/useDebounce';
 import AnimeCard from '../components/AnimeCard';
 import Pagination from '../components/Pagination';
 import type { Anime } from '../types/anime';
-import { fetchAnimeList } from '../utils/api';
+import { fetchAnimeList, fetchAnimeById } from '../utils/api';
 
 const SearchPage: React.FC = () => {
   const [animeList, setAnimeList] = useState<Anime[]>([]);
@@ -15,6 +15,9 @@ const SearchPage: React.FC = () => {
   const [totalPages, setTotalPages] = useState(1);
   const [pageSize, setPageSize] = useState(10);
   const debouncedSearch = useDebounce(search, 250);
+  const [selectedAnimeId, setSelectedAnimeId] = useState<number | null>(null);
+  const [selectedAnime, setSelectedAnime] = useState<Anime | null>(null);
+  const [modalLoading, setModalLoading] = useState(false);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -43,6 +46,19 @@ const SearchPage: React.FC = () => {
   useEffect(() => {
     setPage(1);
   }, [debouncedSearch, pageSize]);
+
+  // Fetch anime details when selectedAnimeId changes
+  useEffect(() => {
+    if (selectedAnimeId !== null) {
+      setModalLoading(true);
+      fetchAnimeById(selectedAnimeId)
+        .then(setSelectedAnime)
+        .catch(() => setSelectedAnime(null))
+        .finally(() => setModalLoading(false));
+    } else {
+      setSelectedAnime(null);
+    }
+  }, [selectedAnimeId]);
 
   // Helper to render page numbers (show up to 6 pages around current)
   const renderPageNumbers = () => {
@@ -106,6 +122,7 @@ const SearchPage: React.FC = () => {
                 key={anime.mal_id}
                 imageUrl={anime.images.jpg.image_url}
                 title={anime.title}
+                onClick={() => setSelectedAnimeId(anime.mal_id)}
               />
             ))
           )}
@@ -122,6 +139,48 @@ const SearchPage: React.FC = () => {
             renderPageNumbers={renderPageNumbers}
           />
         </div>
+
+        {/* Modal for Anime Details */}
+        {selectedAnimeId !== null && (
+          <div
+            className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-80 transition-all"
+            onClick={() => setSelectedAnimeId(null)}
+          >
+            <div
+              className="relative bg-[#181818] rounded-lg shadow-2xl max-w-3xl w-full mx-4 flex flex-col md:flex-row overflow-hidden"
+              onClick={e => e.stopPropagation()}
+            >
+              {modalLoading || !selectedAnime ? (
+                <div className="flex-1 flex items-center justify-center min-h-[300px] text-white text-xl">Loading...</div>
+              ) : (
+                <>
+                  <img
+                    src={selectedAnime.images.jpg.image_url}
+                    alt={selectedAnime.title}
+                    className="w-full md:w-1/3 object-cover h-72 md:h-auto"
+                  />
+                  <div className="flex-1 p-6 flex flex-col justify-between">
+                    <div>
+                      <h2 className="text-3xl font-bold text-white mb-2">{selectedAnime.title}</h2>
+                      <p className="text-gray-300 mb-4 line-clamp-6">{selectedAnime.synopsis}</p>
+                      <div className="flex flex-wrap gap-4 text-gray-400 text-sm mb-4">
+                        <span>Rank: <span className="text-white font-semibold">#{selectedAnime.rank}</span></span>
+                        <span>Popularity: <span className="text-white font-semibold">#{selectedAnime.popularity}</span></span>
+                        <span>Members: <span className="text-white font-semibold">{selectedAnime.members.toLocaleString()}</span></span>
+                      </div>
+                    </div>
+                    <button
+                      className="mt-4 px-6 py-2 bg-[#e50914] text-white rounded-lg font-bold text-lg hover:bg-[#b0060f] transition-colors self-start"
+                      onClick={() => setSelectedAnimeId(null)}
+                    >
+                      Close
+                    </button>
+                  </div>
+                </>
+              )}
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );

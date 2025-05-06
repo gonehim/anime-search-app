@@ -24,4 +24,10 @@ export async function fetchAnimeList({ query = '', page = 1, limit = 10 }: Fetch
     data: data.data || [],
     lastVisiblePage: data.pagination?.last_visible_page || 1,
   };
+}
+
+export async function fetchAnimeById(id: string | number): Promise<Anime> {
+  const res = await fetch(`https://api.jikan.moe/v4/anime/${id}`);
+  const data = await res.json();
+  return data.data;
 } 
