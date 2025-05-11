@@ -37,6 +37,51 @@ The application will be available at `http://localhost:5173`
 - **Routing:** react-router-dom
 - **API:** Jikan API (https://api.jikan.moe/v4)
 
+## 📡 API Endpoints
+
+The application uses the following Jikan API endpoints:
+
+### Base URL
+```
+https://api.jikan.moe/v4
+```
+
+### Available Endpoints
+
+1. **Search Anime**
+   ```
+   GET /anime?q={query}&page={page}&limit={limit}
+   ```
+   - `query`: Search term (optional)
+   - `page`: Page number (default: 1)
+   - `limit`: Results per page (default: 10)
+   - Example: `https://api.jikan.moe/v4/anime?q=naruto&page=1&limit=10`
+
+2. **Get Anime Details**
+   ```
+   GET /anime/{id}
+   ```
+   - `id`: Anime ID
+   - Example: `https://api.jikan.moe/v4/anime/1`
+
+### Response Structure
+
+```typescript
+interface Anime {
+  mal_id: number;
+  title: string;
+  images: {
+    jpg: {
+      image_url: string;
+    };
+  };
+  synopsis: string;
+  rank: number;
+  popularity: number;
+  members: number;
+}
+```
+
 ## 📁 Project Structure
 
 ```
@@ -64,6 +109,11 @@ anime-search-app/
 - Comprehensive anime information
 - Back navigation
 - State preservation
+
+## 🌐 Deployment
+
+The application is deployed on Vercel and can be accessed at:
+[Anime Search App](https://v0-anime-search-app.vercel.app/)
 
 ## 🤝 Contributing
 
